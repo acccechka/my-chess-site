@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chess Studio</title>
+  <style>
+    body {
+      margin: 0;
+      background: #141a24;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    header { padding: 35px 15px; }
+    h1 { font-size: 32px; }
+    p { color: #c4cbd5; }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      width: min(90vw, 440px);
+      aspect-ratio: 1;
+      margin: 25px auto;
+      border: 5px solid #354052;
+    }
+    .square {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(25px, 7vw, 45px);
+    }
+    .light { background: #eeeed2; color: black; }
+    .dark { background: #769656; color: black; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>♞ Chess Studio</h1>
+    <p>Шахматная доска и задачи</p>
+  </header>
+
+  <div class="board" id="board"></div>
+
+  <script>
+    const pieces = [
+      "♜♞♝♛♚♝♞♜",
+      "♟♟♟♟♟♟♟♟",
+      "        ",
+      "        ",
+      "        ",
+      "        ",
+      "♙♙♙♙♙♙♙♙",
+      "♖♘♗♕♔♗♘♖"
+    ];
+    const board = document.getElementById("board");
+    pieces.forEach((rank, r) => {
+      [...rank].forEach((piece, c) => {
+        const square = document.createElement("div");
+        square.className =
+          "square " + ((r + c) % 2 ? "dark" : "light");
+        square.textContent = piece;
+        board.appendChild(square);
+      });
+    });
+  </script>
+</body>
+</html>
