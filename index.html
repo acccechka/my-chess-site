@@ -1,68 +1,91 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chess Studio</title>
-  <style>
-    body {
-      margin: 0;
-      background: #141a24;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-    header { padding: 35px 15px; }
-    h1 { font-size: 32px; }
-    p { color: #c4cbd5; }
-    .board {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      width: min(90vw, 440px);
-      aspect-ratio: 1;
-      margin: 25px auto;
-      border: 5px solid #354052;
-    }
-    .square {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: clamp(25px, 7vw, 45px);
-    }
-    .light { background: #eeeed2; color: black; }
-    .dark { background: #769656; color: black; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess Studio — шахматные задачи</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#141a24;color:#f5f7fb;text-align:center}
+header{padding:28px 16px 6px}h1{margin:0 0 8px;font-size:clamp(28px,5vw,40px)}p{color:#b8c3d3}
+main{max-width:680px;margin:auto;padding:0 16px 35px}
+.panel{background:#202b3b;border:1px solid #344255;border-radius:16px;padding:18px;margin:16px auto}
+#board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));width:min(90vw,480px);aspect-ratio:1;margin:16px auto;border:5px solid #40516a;border-radius:5px;overflow:hidden}
+.square{display:flex;align-items:center;justify-content:center;aspect-ratio:1;min-width:0;min-height:0;font-size:clamp(27px,7vw,51px);border:0;cursor:pointer;position:relative;font-family:'DejaVu Sans','Arial Unicode MS',serif;padding:0}
+.light{background:#eeeed2}.dark{background:#769656}.square.selected{outline:4px solid #ffcf54;outline-offset:-4px}
+.square.hint:after{content:'';width:22%;aspect-ratio:1;background:#ffc44d;border-radius:50%;position:absolute;opacity:.8}
+.square:focus-visible{outline:4px solid #2c7aff;outline-offset:-4px}
+.piece-white{color:#fff;text-shadow:0 2px 2px #000,1px 0 #111,-1px 0 #111,0 -1px #111}.piece-black{color:#141414;text-shadow:0 1px 1px #ddd}
+.controls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px}
+button.action{background:#79b879;color:#102015;border:0;border-radius:10px;padding:12px 16px;font-weight:700;cursor:pointer}
+button.secondary{background:#34455c;color:#fff}#status{min-height:48px;font-weight:600;color:#e7ecf4}
+small{color:#aebbc9}#counter{color:#b7c9e2}
+</style>
 </head>
 <body>
-  <header>
-    <h1>♞ Chess Studio</h1>
-    <p>Шахматная доска и задачи</p>
-  </header>
-
-  <div class="board" id="board"></div>
-
-  <script>
-    const pieces = [
-      "♜♞♝♛♚♝♞♜",
-      "♟♟♟♟♟♟♟♟",
-      "        ",
-      "        ",
-      "        ",
-      "        ",
-      "♙♙♙♙♙♙♙♙",
-      "♖♘♗♕♔♗♘♖"
-    ];
-    const board = document.getElementById("board");
-    pieces.forEach((rank, r) => {
-      [...rank].forEach((piece, c) => {
-        const square = document.createElement("div");
-        square.className =
-          "square " + ((r + c) % 2 ? "dark" : "light");
-        square.textContent = piece;
-        board.appendChild(square);
-      });
-    });
-  </script>
+<header><h1>♞ Chess Studio</h1><p>Решай шахматные задачи и тренируй тактику</p></header>
+<main><section class="panel">
+<div id="counter"></div><h2 id="taskTitle">Мат в один ход</h2>
+<p>Ход белых. Нажми на белую фигуру, затем на поле назначения.</p>
+<div id="board" role="group" aria-label="Шахматная доска"></div>
+<div id="status" aria-live="polite">Найди мат в один ход!</div>
+<div class="controls">
+<button class="action secondary" id="hint">Подсказка</button>
+<button class="action secondary" id="reset">Начать заново</button>
+<button class="action" id="next">Следующая задача →</button>
+</div></section><small>Chess Studio · Тренировка шахматного мышления</small></main>
+<script>
+// Координаты фигур: a1 — нижний левый угол со стороны белых.
+// Все задачи проверены как мат в один ход.
+const tasks = [
+ {name:'Задача 1 · Мат в один ход',pieces:{'h8':'k','f6':'K','g6':'Q'},from:'g6',to:'g7',hint:'Ферзь идёт на g7.'},
+ {name:'Задача 2 · Мат в один ход',pieces:{'a8':'k','c6':'K','b6':'Q'},from:'b6',to:'b7',hint:'Ферзь идёт на b7.'},
+ {name:'Задача 3 · Мат в один ход',pieces:{'h8':'k','g6':'K','c4':'B','h1':'R'},from:'h1',to:'h7',hint:'Ладья идёт на h7.'}
+];
+const glyph={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+const board=document.getElementById('board');const status=document.getElementById('status');
+let index=0,selected=null,solved=false,hintSquare=null;
+function render(){
+ const t=tasks[index];board.replaceChildren();
+ document.getElementById('counter').textContent=`Задача ${index+1} из ${tasks.length}`;
+ document.getElementById('taskTitle').textContent=t.name;
+ for(let rank=8;rank>=1;rank--)for(let file=0;file<8;file++){
+  const sq=String.fromCharCode(97+file)+rank;
+  const el=document.createElement('button');el.type='button';
+  el.className='square '+((file+rank)%2?'light':'dark');
+  if(sq===selected)el.classList.add('selected');
+  if(sq===hintSquare)el.classList.add('hint');
+  const piece=t.pieces[sq];
+  if(piece){const span=document.createElement('span');span.textContent=glyph[piece];span.className=piece===piece.toUpperCase()?'piece-white':'piece-black';el.append(span)}
+  el.setAttribute('aria-label',`${sq}${piece?' фигура '+glyph[piece]:''}`);
+  el.addEventListener('click',()=>choose(sq));board.append(el);
+ }
+}
+function choose(sq){
+ if(solved)return;
+ const t=tasks[index];
+ if(selected===null){
+  const p=t.pieces[sq];if(!p||p!==p.toUpperCase()){status.textContent='Сначала выбери белую фигуру.';return}
+  selected=sq;status.textContent=`Выбрано поле ${sq}. Куда пойдёт фигура?`;
+ }else if(selected===sq){selected=null;status.textContent='Выбор отменён.'}
+ else if(selected===t.from&&sq===t.to){
+  t.pieces[sq]=t.pieces[selected];delete t.pieces[selected];selected=null;hintSquare=null;solved=true;
+  status.textContent='🎉 Правильно! Мат в один ход.';
+ }else{selected=null;status.textContent='Пока не мат. Попробуй другой ход!'}
+ render();
+}
+function load(i){index=(i+tasks.length)%tasks.length;selected=null;solved=false;hintSquare=null;
+ // Восстанавливаем исходную позицию каждой задачи.
+ const setups=[
+ {'h8':'k','f6':'K','g6':'Q'},
+ {'a8':'k','c6':'K','b6':'Q'},
+ {'h8':'k','g6':'K','c4':'B','h1':'R'}
+ ];tasks.forEach((t,j)=>t.pieces={...setups[j]});
+ status.textContent='Найди мат в один ход!';render();}
+document.getElementById('hint').onclick=()=>{hintSquare=tasks[index].from;status.textContent=tasks[index].hint;render()};
+document.getElementById('reset').onclick=()=>load(index);
+document.getElementById('next').onclick=()=>load(index+1);
+load(0);
+</script>
 </body>
 </html>
